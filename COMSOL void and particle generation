@@ -1,0 +1,85 @@
+package builder;
+
+import com.comsol.api.*;
+import com.comsol.model.*;
+import com.comsol.model.physics.*;
+import com.comsol.model.application.*;
+
+public class particles extends ApplicationMethod {
+  
+  public void execute() {
+    int NUMBER_OF_particles = 90;
+    int ind = 0;
+    double hx, hy = 0.0;
+    double hr = 0.01;
+    double zone_width = 1.0;
+    double zone_height = 0.5;
+    model.component("comp1").geom("geom1").lengthUnit("m");
+    model.component("comp1").geom("geom1").selection().create("csel2", "CumulativeSelection");
+    while (ind < NUMBER_OF_particles) {
+      hx = Math.random()*zone_width;
+      hy = Math.random()*zone_height;
+      if ((hx+hr) > (zone_width)) {continue; }
+      if ((hy+hr) > (zone_height)) {continue; }
+      if ((hx-hr) < 0) {continue; }
+      if ((hy-hr) < 0) {continue; }
+      model.component("comp1").geom("geom1").create("c"+ind, "Circle");
+      model.component("comp1").geom("geom1").feature("c"+ind).set("r", hr);
+      model.component("comp1").geom("geom1").feature("c"+ind).set("pos", new double[]{hx, hy});
+      model.component("comp1").geom("geom1").feature("c"+ind).set("contributeto", "csel2");
+      ind++;
+    }
+  }
+  
+}
+
+package builder;
+
+import com.comsol.api.*;
+import com.comsol.model.*;
+import com.comsol.model.physics.*;
+import com.comsol.model.application.*;
+
+public class voidellipse extends ApplicationMethod {
+  
+  public void execute() {
+    int NUMBER_OF_Holes = 10;
+    int ind = 0;
+    double hx, hy, hr, hz = 0.0;
+    double zone_width = 1.0;
+    double zone_height = 0.5;
+    double HOLE_MIN_RADIUS = 0.01;
+    double HOLE_MAX_RADIUS = 0.1;
+    model.component("comp1").geom("geom1").lengthUnit("m");
+    model.component("comp1").geom("geom1").selection().create("csel1", "CumulativeSelection");
+    while (ind < NUMBER_OF_Holes) {
+      hx = Math.random()*zone_width;
+      hy = Math.random()*zone_height;
+      hr = Math.random()*(HOLE_MAX_RADIUS-HOLE_MIN_RADIUS)+HOLE_MIN_RADIUS;
+      hz = Math.random()*(HOLE_MAX_RADIUS-HOLE_MIN_RADIUS)+HOLE_MIN_RADIUS;
+      if ((hx+hr) > (zone_width)) {continue; }
+      if ((hy+hz) > (zone_height)) {continue; }
+      if ((hx-hr) < 0) {continue; }
+      if ((hy-hz) < 0) {continue; }
+      model.component("comp1").geom("geom1").create("e"+ind, "Ellipse");
+      model.component("comp1").geom("geom1").feature("e"+ind).set("a", hr);
+      model.component("comp1").geom("geom1").feature("e"+ind).set("b", hz);
+      model.component("comp1").geom("geom1").feature("e"+ind).set("pos", new double[]{hx, hy});
+      model.component("comp1").geom("geom1").feature("e"+ind).set("contributeto", "csel1");
+      ind++;
+    }
+    model.component("comp1").geom("geom1").create("r1", "Rectangle");
+    model.component("comp1").geom("geom1").feature("r1").set("size", new double[]{zone_width, zone_height});
+    model.component("comp1").geom("geom1").create("dif1", "Difference");
+    model.component("comp1").geom("geom1").feature("dif1").selection("input").set("r1");
+    model.component("comp1").geom("geom1").feature("dif1").selection("input2").named("csel1");
+    model.component("comp1").geom("geom1").feature("dif1").set("keepsubtract", true);
+    model.component("comp1").geom("geom1").create("dif2", "Difference");
+    model.component("comp1").geom("geom1").feature("dif2").selection("input").set("dif1");
+    model.component("comp1").geom("geom1").feature("dif2").selection("input2").named("csel2");
+    model.component("comp1").geom("geom1").feature("dif2").set("keepsubtract", true);
+    model.component("comp1").geom("geom1").run();
+    
+  }
+  
+}
